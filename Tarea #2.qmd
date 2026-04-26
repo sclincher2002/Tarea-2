@@ -107,13 +107,13 @@ supp_len
 
 Usa la base de datos mtcars. Haz lo siguiente:\
 1. Selecciona las columnas mpg, cyl, hp y wt.\
-2. Crea una nueva columna llamada rendimiento_potencia usando la fórmula: rendimiento_potencia = mpg hp\
+2. Crea una nueva columna llamada rendimiento_potencia usando la fórmula: rendimiento_potencia = mpg/hp
 3. Ordena los automóviles de mayor a menor según rendimiento_potencia.
 
 ```{r}
 eje9 <- mtcars %>%
   select(mpg,cyl,hp,wt) %>%
-  mutate(rendimiento_potencia= mpg*hp) %>%
+  mutate(rendimiento_potencia= mpg/hp) %>%
   arrange(desc(rendimiento_potencia))
 eje9
 ```
