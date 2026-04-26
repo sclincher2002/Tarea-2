@@ -1,0 +1,283 @@
+---
+title: "Tarea #2"
+author: "Denis Javier Rivera Arbaiza"
+format: html
+editor: visual
+---
+
+## Ejercicios sobre arrange()
+
+## Ejercicio 1
+
+Usa la base de datos mtcars.\
+Ordena los automóviles de menor a mayor según la variable mpg.
+
+```{r}
+install.packages("dplyr")
+library(dplyr)
+data(mtcars)
+
+```
+
+```{r}
+mpg <- mtcars %>%
+  arrange(mpg)
+mpg
+```
+
+## Ejercicio 2
+
+Usa la base de datos mtcars. Ordena los automóviles de mayor a menor según la variable mpg.
+
+```{r}
+mpg2 <- mtcars %>%
+  arrange(desc(mpg))
+mpg2
+
+```
+
+## Ejercicio 3
+
+Usa la base de datos mtcars.\
+Ordena los automóviles de mayor a menor según la variable hp.
+
+```{r}
+hp1 <- mtcars %>%
+  arrange(desc(hp))
+hp1
+
+```
+
+## Ejercicio 4
+
+Usa la base de datos iris. Ordena las flores de menor a mayor según Sepal.Length.
+
+```{r}
+data(iris)
+iris1 <- iris %>%
+  arrange(Sepal.Length)
+iris1
+```
+
+## Ejercicio 5
+
+Usa la base de datos iris. Ordena las flores de mayor a menor según Petal.Length.
+
+```{r}
+iris2 <- iris %>%
+  arrange(desc(Petal.Length))
+iris2
+```
+
+## Ejercicio 6
+
+Usa la base de datos iris. Ordena primero por Species y luego por Petal.Length de mayor a menor.
+
+```{r}
+species_petal <- iris %>%
+  arrange(Species,desc(Petal.Length))
+species_petal
+```
+
+## Ejercicio 7
+
+Usa la base de datos airquality. Primero elimina los valores faltantes usando na.omit(). Luego ordena los datos de mayor a menor según la temperatura, variable Temp.
+
+```{r}
+data("airquality")
+temp1 <- airquality %>%
+  na.omit() %>%
+  arrange(desc(Temp))
+temp1
+
+```
+
+## Ejercicio 8
+
+Usa la base de datos ToothGrowth. Ordena los datos primero por el tipo de suplemento supp y luego por la longitud dental len de mayor a menor.
+
+```{r}
+data("ToothGrowth")
+supp_len <- ToothGrowth %>%
+  arrange(supp,desc(len))
+supp_len
+```
+
+## Ejercicio 9
+
+Usa la base de datos mtcars. Haz lo siguiente:\
+1. Selecciona las columnas mpg, cyl, hp y wt.\
+2. Crea una nueva columna llamada rendimiento_potencia usando la fórmula: rendimiento_potencia = mpg hp\
+3. Ordena los automóviles de mayor a menor según rendimiento_potencia.
+
+```{r}
+eje9 <- mtcars %>%
+  select(mpg,cyl,hp,wt) %>%
+  mutate(rendimiento_potencia= mpg*hp) %>%
+  arrange(desc(rendimiento_potencia))
+eje9
+```
+
+## Ejercicio 10
+
+Usa la base de datos mtcars. Realiza lo siguiente:\
+1. Selecciona las variables mpg, cyl, hp y wt.\
+2. Filtra los automóviles que tengan más de 150 caballos de fuerza.\
+3. Crea una nueva variable llamada eficiencia definida como: eficiencia = mpg / wt\
+4. Agrupa por número de cilindros (cyl).\
+5. Calcula el promedio de eficiencia por grupo.\
+6. Ordena los resultados de mayor a menor según el promedio de eficiencia.
+
+```{r}
+eje10 <- mtcars %>%
+  select(mpg,cyl,hp,wt) %>%
+  filter(hp>150) %>%
+  mutate(eficiencia_definida= mpg/wt) %>%
+  group_by(cyl) %>%
+  summarise(n=mean(eficiencia_definida)) %>%
+  arrange(desc(n))
+eje10
+```
+
+## Ejercicio 11
+
+Usa la base de datos iris. Realiza lo siguiente:\
+1. Selecciona todas las columnas numéricas.\
+2. Filtra las flores cuya longitud de pétalo (Petal.Length) sea mayor que 4.\
+3. Crea una nueva variable llamada relacion_petalo_sepalo: relacion_petalo_sepalo = Petal.Length / Sepal.Length\
+4. Agrupa por especie (Species).\
+5. Calcula:\
+• promedio de relacion_petalo_sepalo\
+• máximo de Petal.Width\
+6. Ordena los resultados de mayor a menor según el promedio de la relación.
+
+```{r}
+#literal 1 al 3
+eje11 <- iris %>%
+  select(where(is.numeric)) %>%
+  filter(Petal.Length >4) %>%
+  mutate(relacion_petalo_sepalo = Petal.Length / Sepal.Length)
+eje11
+
+
+eje11.1 <- iris %>%
+  filter(Petal.Length >4) %>%
+  mutate(relacion_petalo_sepalo = Petal.Length / Sepal.Length)%>%
+#del literal 4 al 6  (esto por que el literal 1 elimina las variables no numericas entre ellas esta Species)
+  group_by(Species) %>%
+  summarise(promedio_petalo_sepalo=mean(relacion_petalo_sepalo),maximo_Petal.Width=max(Petal.Width)) %>%
+  arrange(desc(promedio_petalo_sepalo))
+eje11.1
+
+
+
+```
+
+## Ejercicio 12
+
+Usa la base de datos airquality. Realiza lo siguiente:
+
+1\. Elimina los valores faltantes.\
+2. Selecciona las variables Temp, Wind, Ozone y Month.\
+3. Filtra los días donde la temperatura sea mayor a 80.\
+4. Crea una nueva variable llamada indice_calidad: indice_calidad = Ozone / Wind\
+5. Agrupa por mes (Month).\
+6. Calcula:\
+• promedio de indice_calidad\
+• cantidad de observaciones. Ordena los resultados de menor a mayor según el promedio del índice.
+
+```{r}
+data("airquality")
+airquality_limpio <- airquality %>%
+  na.omit() %>%
+  select(Temp,Wind,Ozone,Month) %>%
+  filter(Temp>80) %>%
+  mutate(indice_calidad=Ozone/Wind) %>%
+  group_by(Month) %>%
+  summarise(promedio_indice_calidad=mean(indice_calidad),cantidad_observaciones=n()) %>%
+  arrange(promedio_indice_calidad)
+airquality_limpio
+```
+
+## Ejercicio 13
+
+Usa la base de datos ToothGrowth. Realiza lo siguiente:\
+1. Selecciona las variables len, supp y dose.\
+2. Filtra los datos donde la dosis (dose) sea mayor o igual a 1.\
+3. Crea una nueva variable llamada log_len: log_len = log(len)\
+4. Agrupa por tipo de suplemento (supp) y dosis (dose).\
+5. Calcula:\
+• promedio de log_len\
+• desviación estándar de len\
+6. Ordena primero por tipo de suplemento y luego de mayor a menor por el promedio de log_len.
+
+```{r}
+data("ToothGrowth")
+
+eje13 <- ToothGrowth %>%
+  select(len,supp,dose) %>%
+  filter(dose>=1) %>%
+  mutate(log_len=log(len)) %>%
+  group_by(supp,dose) %>%
+  summarise(promedio_log_len=mean(log_len),desviacion_estandar_len=sd(len)) %>%
+  arrange(supp,desc(promedio_log_len))
+eje13
+```
+
+## Ejercicio 14
+
+Usa la base de datos mtcars. Este ejercicio requiere más análisis:\
+1. Selecciona las variables mpg, cyl, hp, wt y gear.\
+2. Filtra los automóviles con:\
+• más de 4 cilindros\
+• y peso menor a 4\
+3. Crea dos nuevas variables: potencia_relativa = hp / wt consumo_inverso = 1 / mpg\
+4. Agrupa por número de marchas (gear) y cilindros (cyl).\
+5. Calcula:\
+• promedio de potencia_relativa\
+• promedio de consumo_inverso\
+• número de observaciones\
+6. Ordena los resultados:\
+• primero de mayor a menor según potencia_relativa\
+• y en caso de empate, de menor a mayor según consumo_inverso
+
+```{r}
+data("mtcars")
+
+eje14 <- mtcars %>%
+  select(mpg,cyl,hp,wt,gear) %>%
+  filter(cyl>4,wt<4) %>%
+  mutate(potencia_relativa=hp/wt,consumo_inverso=1/mpg) %>%
+  group_by(gear,cyl) %>%
+  summarise(promedio_potencia_relativa=mean(potencia_relativa),promedio_consumo_inverso=mean(consumo_inverso),numero_observaciones=n()) %>%
+  arrange(desc(promedio_potencia_relativa),promedio_consumo_inverso)
+eje14
+```
+
+## Ejercicio 15
+
+Usa la base de datos iris. Realiza lo siguiente: \
+1. Selecciona las variables Sepal.Length, Sepal.Width, Petal.Length, Petal.Width y Species. \
+2. Filtra las flores que tengan: \
+• longitud del pétalo mayor que 3 \
+• y ancho del sépalo mayor que 2.5 \
+3. Crea dos nuevas variables: relacion_petalo = Petal.Length / Petal.Width relacion_sepalo = Sepal.Length / Sepal.Width \
+4. Agrupa por especie (Species). \
+5. Calcula: \
+• promedio de relacion_petalo \
+• promedio de relacion_sepalo \
+• cantidad de observaciones \
+6. Ordena los resultados de mayor a menor según el promedio de relacion_petalo.
+
+```{r}
+
+eje15 <- iris %>%
+  select(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width, Species) %>%
+  filter(Petal.Length>3,Sepal.Width>2.5) %>%
+  mutate(relacion_petalo=Petal.Length/Petal.Width,relacion_sepalo=Sepal.Length/Sepal.Width) %>%
+  group_by(Species) %>%
+  summarise(promedio_relacion_petalo=mean(relacion_petalo),promedio_relacion_sepalo=mean(relacion_sepalo),cantidad_observaciones=n()) %>%
+  arrange(desc(promedio_relacion_petalo))
+  
+eje15
+```
