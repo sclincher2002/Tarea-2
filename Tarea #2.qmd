@@ -152,24 +152,15 @@ Usa la base de datos iris. Realiza lo siguiente:\
 6. Ordena los resultados de mayor a menor según el promedio de la relación.
 
 ```{r}
-#literal 1 al 3
+
 eje11 <- iris %>%
-  select(where(is.numeric)) %>%
+  select(where(is.numeric),Species) %>%
   filter(Petal.Length >4) %>%
-  mutate(relacion_petalo_sepalo = Petal.Length / Sepal.Length)
-eje11
-
-
-eje11.1 <- iris %>%
-  filter(Petal.Length >4) %>%
-  mutate(relacion_petalo_sepalo = Petal.Length / Sepal.Length)%>%
-#del literal 4 al 6  (esto por que el literal 1 elimina las variables no numericas entre ellas esta Species)
+  mutate(relacion_petalo_sepalo = Petal.Length / Sepal.Length) %>% 
   group_by(Species) %>%
   summarise(promedio_petalo_sepalo=mean(relacion_petalo_sepalo),maximo_Petal.Width=max(Petal.Width)) %>%
   arrange(desc(promedio_petalo_sepalo))
-eje11.1
-
-
+eje11
 
 ```
 
