@@ -1,0 +1,91 @@
+Ejercicio 1
+Usa la base de datos mtcars.
+Realiza lo siguiente usando pasos intermedios:
+1. Selecciona las columnas mpg, cyl, hp y wt.
+2. Filtra los automóviles con hp > 100.
+3. Ordena los resultados de mayor a menor según mpg.
+
+```{r}
+#Datos
+install.packages("dplyr")
+library(dplyr)
+data("mtcars")
+data("airquality")
+data("iris")
+
+```
+Ejercicio 4
+Usa la base de datos airquality.
+Realiza lo siguiente usando composición de funciones:
+1. Elimina los valores faltantes.
+2. Selecciona las columnas Ozone, Wind, Temp y Month.
+3. Ordena los datos de mayor a menor según Temp.
+
+```{r}
+data("mtcars")
+carro1 <- select(mtcars, mpg,cyl,hp,wt)
+carro2 <- filter(carro1, hp>100)
+carro3 <- arrange(carro2,desc(mpg))
+carro3
+
+carro <- select(mtcars,mpg,cyl,hp,wt)
+carro <- filter(carro,hp>100)
+carro <- arrange(carro,desc(mpg))
+carro
+
+select(
+  filter(
+    arrange(mtcars,desc(mpg))
+  , hp>100)
+, mpg,cyl,hp,wt)
+
+carroo <- mtcars%>%
+  select(mpg,cyl,hp,wt) %>%
+  filter(hp>100) %>%
+  arrange(desc(mpg))
+carroo
+
+```
+
+Ejercicio 7
+Usa la base de datos iris.
+Realiza lo siguiente usando tuberías:
+1. Selecciona las columnas Sepal.Length, Sepal.Width, Petal.Length, Petal.Width y Species.
+2. Filtra las flores con Petal.Length > 3.
+3. Crea una variable llamada relacion_petalo:
+
+```{r}
+flor1 <- select(iris,Sepal.Length, Sepal.Width, Petal.Length, Petal.Width,Species)
+flor2 <- filter(paso1,Petal.Length > 3)
+flor3 <- mutate(paso2,relacion_petalo = Petal.Length/Petal.Width)
+flor4 <- group_by(paso3,Species) 
+flor5 <- summarise(paso4,promedio_relacion_petalo =mean(relacion_petalo),maximo_Sepal.Length = max(Sepal.Length),observaciones = n())
+flor6 <- arrange(paso5,desc(promedio_relacion_petalo))
+flor6
+
+flor <- select(iris,Sepal.Length, Sepal.Width, Petal.Length, Petal.Width,Species)
+flor <- filter(paso1,Petal.Length > 3)
+flor <- mutate(paso2,relacion_petalo = Petal.Length/Petal.Width)
+flor <- group_by(paso3,Species) 
+flor <- summarise(paso4,promedio_relacion_petalo =mean(relacion_petalo),maximo_Sepal.Length = max(Sepal.Length),observaciones = n())
+flor <- arrange(paso5,desc(promedio_relacion_petalo))
+flor
+
+arrange(
+  summarise(
+    group_by(mutate
+             (filter
+               (select
+                 (iris,Sepal.Length, Sepal.Width, Petal.Length, Petal.Width,Species),Petal.Length > 3),relacion_petalo = Petal.Length/Petal.Width),Species) ,promedio_relacion_petalo =mean(relacion_petalo),maximo_Sepal.Length = max(Sepal.Length),observaciones = n()),desc(promedio_relacion_petalo)
+  )
+
+florr <- iris %>%
+  select(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width,Species) %>%
+  filter(Petal.Length > 3) %>%
+  mutate(relacion_petalo = Petal.Length/Petal.Width) %>%
+  group_by(Species) %>%
+  summarise(promedio_relacion_petalo =mean(relacion_petalo),maximo_Sepal.Length = max(Sepal.Length),observaciones = n()) %>%
+  arrange(paso5,desc(promedio_relacion_petalo))
+florr
+
+```
