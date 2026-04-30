@@ -53,6 +53,13 @@ Realiza lo siguiente usando tuberías:
 1. Selecciona las columnas Sepal.Length, Sepal.Width, Petal.Length, Petal.Width y Species.
 2. Filtra las flores con Petal.Length > 3.
 3. Crea una variable llamada relacion_petalo:
+indice_ozono = Ozone/Wind
+4. Agrupa por Species.
+5. Calcula:
+• promedio de relacion_petalo
+• máximo de Sepal.Length
+• cantidad de observaciones
+6. Ordena los resultados de mayor a menor según el promedio de relacion_petalo.
 
 ```{r}
 flor1 <- select(iris,Sepal.Length, Sepal.Width, Petal.Length, Petal.Width,Species)
