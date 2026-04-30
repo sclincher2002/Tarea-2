@@ -1,9 +1,9 @@
-Ejercicio 1
-Usa la base de datos mtcars.
-Realiza lo siguiente usando pasos intermedios:
-1. Selecciona las columnas mpg, cyl, hp y wt.
-2. Filtra los automóviles con hp > 100.
-3. Ordena los resultados de mayor a menor según mpg.
+#Ejercicio 1
+#Usa la base de datos mtcars.
+#Realiza lo siguiente usando pasos intermedios:
+#1. Selecciona las columnas mpg, cyl, hp y wt.
+#2. Filtra los automóviles con hp > 100.
+#3. Ordena los resultados de mayor a menor según mpg.
 
 ```{r}
 #Datos
@@ -14,12 +14,12 @@ data("airquality")
 data("iris")
 
 ```
-Ejercicio 4
-Usa la base de datos airquality.
-Realiza lo siguiente usando composición de funciones:
-1. Elimina los valores faltantes.
-2. Selecciona las columnas Ozone, Wind, Temp y Month.
-3. Ordena los datos de mayor a menor según Temp.
+#Ejercicio 4
+#Usa la base de datos airquality.
+#Realiza lo siguiente usando composición de funciones:
+#1. Elimina los valores faltantes.
+#2. Selecciona las columnas Ozone, Wind, Temp y Month.
+#3. Ordena los datos de mayor a menor según Temp.
 
 ```{r}
 data("mtcars")
