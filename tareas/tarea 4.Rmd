@@ -1,0 +1,544 @@
+---
+title: 'Unidad II: Tuberías con el paquete magrittr'
+author: "Ángel Gabriel Elías Díaz"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: '3'
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: flatly
+---
+
+# Unidad II: Tuberías con el paquete `magrittr`
+
+Las tuberías son una herramienta muy útil en R porque permiten escribir una secuencia de operaciones de forma clara y fácil de leer.
+
+El operador tubería más común es:
+
+```{r, eval=FALSE}
+%>%
+```
+
+Este operador viene del paquete `magrittr`. Muchos paquetes del `tidyverse` lo cargan automáticamente, pero en esta unidad lo cargaremos explícitamente.
+
+```{r}
+library(magrittr)
+library(dplyr)
+```
+
+La idea principal de una tubería es tomar un objeto, aplicarle una función, luego otra, y así sucesivamente, como si estuviéramos describiendo una secuencia de pasos.
+
+---
+
+# 1. Alternativas a tuberías
+
+Antes de usar tuberías, veremos distintas formas de escribir una misma secuencia de operaciones.
+
+Supongamos una pequeña historia:
+
+> El conejito Foo Foo  
+> saltó por el bosque,  
+> recogió a los ratones del campo  
+> y les dio golpecitos en la cabeza.
+
+En código, imaginemos que tenemos un objeto llamado `foo_foo`:
+
+```{r, eval=FALSE}
+foo_foo <- little_bunny()
+```
+
+Y tres funciones:
+
+```{r, eval=FALSE}
+hop()
+scoop()
+bop()
+```
+
+La idea es aplicar estas funciones en orden.
+
+---
+
+## 1.1 Usando pasos intermedios
+
+Una primera forma es guardar cada paso en un nuevo objeto.
+
+```{r, eval=FALSE}
+foo_foo_1 <- hop(foo_foo, through = forest)
+foo_foo_2 <- scoop(foo_foo_1, up = field_mice)
+foo_foo_3 <- bop(foo_foo_2, on = head)
+```
+
+Esta forma es sencilla de entender, porque cada línea representa un paso.
+
+Sin embargo, tiene una desventaja: debemos inventar nombres para cada objeto intermedio.
+
+Por ejemplo:
+
+```{r, eval=FALSE}
+foo_foo_1
+foo_foo_2
+foo_foo_3
+```
+
+Muchas veces esos nombres no tienen un significado real. Solo usamos números para distinguirlos.
+
+Esto puede causar problemas como:
+
+1. El código se llena de nombres poco importantes.
+2. Podemos equivocarnos fácilmente al escribir los números.
+3. El código se vuelve más difícil de leer cuando hay muchos pasos.
+
+A pesar de eso, si los objetos intermedios tienen nombres importantes, esta forma puede ser una buena opción.
+
+---
+
+## 1.2 Sobrescribiendo el objeto original
+
+Otra forma es reutilizar el mismo objeto, sobrescribiéndolo en cada paso.
+
+```{r, eval=FALSE}
+foo_foo <- hop(foo_foo, through = forest)
+foo_foo <- scoop(foo_foo, up = field_mice)
+foo_foo <- bop(foo_foo, on = head)
+```
+
+Esta forma evita crear muchos objetos nuevos.
+
+La ventaja es que escribimos menos nombres distintos.
+
+Sin embargo, también tiene desventajas:
+
+1. Si hay un error, puede ser difícil encontrar en qué paso ocurrió.
+2. Si queremos revisar un resultado intermedio, ya no lo tenemos guardado.
+3. El nombre del objeto se repite muchas veces.
+
+Por ejemplo, en este código aparece muchas veces `foo_foo`, y eso puede ocultar lo más importante: las acciones que estamos aplicando.
+
+---
+
+## 1.3 Composición de funciones
+
+Otra alternativa es escribir una función dentro de otra.
+
+```{r, eval=FALSE}
+bop(
+  scoop(
+    hop(foo_foo, through = forest),
+    up = field_mice
+  ),
+  on = head
+)
+```
+
+Esta forma evita crear objetos intermedios.
+
+Sin embargo, puede ser difícil de leer, porque debemos leer el código de adentro hacia afuera.
+
+Primero ocurre:
+
+```{r, eval=FALSE}
+hop(foo_foo, through = forest)
+```
+
+Luego:
+
+```{r, eval=FALSE}
+scoop(..., up = field_mice)
+```
+
+Y finalmente:
+
+```{r, eval=FALSE}
+bop(..., on = head)
+```
+
+El problema es que el orden de lectura natural no coincide con el orden en que queremos contar la historia.
+
+Por eso, cuando hay muchas funciones anidadas, el código puede volverse confuso.
+
+---
+
+## 1.4 Usando tuberías
+
+Finalmente, podemos escribir la misma secuencia usando tuberías.
+
+```{r, eval=FALSE}
+foo_foo %>%
+  hop(through = forest) %>%
+  scoop(up = field_mice) %>%
+  bop(on = head)
+```
+
+Esta forma se lee de arriba hacia abajo.
+
+Podemos interpretarla así:
+
+1. Tomamos `foo_foo`.
+2. Luego aplicamos `hop()`.
+3. Luego aplicamos `scoop()`.
+4. Luego aplicamos `bop()`.
+
+La tubería permite concentrarnos en las acciones, no tanto en los objetos.
+
+En este caso, el código se puede leer casi como una historia:
+
+> Foo Foo salta, luego recoge, luego golpea.
+
+## 1.5 Ejemplo con memoria en R
+
+A veces se piensa que crear objetos intermedios consume demasiada memoria. Pero R puede compartir información entre objetos cuando es posible.
+
+
+```{r, eval=FALSE}
+diamonds <- ggplot2::diamonds
+
+diamonds2 <- diamonds %>%
+  dplyr::mutate(price_per_carat = price / carat)
+
+pryr::object_size(diamonds)
+#> 3.46 MB
+
+pryr::object_size(diamonds2)
+#> 3.89 MB
+
+pryr::object_size(diamonds, diamonds2)
+#> 3.89 MB
+```
+
+Aunque parece extraño, `diamonds` y `diamonds2` juntos no ocupan la suma de ambos tamaños.
+
+Esto ocurre porque `diamonds2` comparte muchas columnas con `diamonds`.
+
+Ahora, si modificamos una columna:
+
+```{r, eval=FALSE}
+diamonds$carat[1] <- NA
+
+pryr::object_size(diamonds)
+#> 3.46 MB
+
+pryr::object_size(diamonds2)
+#> 3.89 MB
+
+pryr::object_size(diamonds, diamonds2)
+#> 4.32 MB
+```
+
+Aquí el tamaño conjunto aumenta porque ya no se puede compartir completamente la columna modificada.
+
+---
+
+# 2. Otras herramientas del paquete `magrittr`
+
+Además del operador `%>%`, el paquete `magrittr` ofrece otros operadores útiles.
+
+En esta sección veremos tres:
+
+1. `%T>%`
+2. `%$%`
+3. `%<>%`
+
+---
+
+## 2.1 El operador `%T>%`
+
+El operador `%T>%` se conoce como tubería tipo “tee”.
+
+Funciona parecido a `%>%`, pero con una diferencia importante:
+
+- `%>%` pasa hacia adelante el resultado de la función de la derecha.
+- `%T>%` ejecuta la función de la derecha, pero devuelve el objeto de la izquierda.
+
+Esto es útil cuando queremos hacer algo por sus efectos secundarios, como graficar o imprimir, pero queremos que la tubería continúe.
+
+Primero, usando `%>%`:
+
+```{r}
+rnorm(100) %>%
+  matrix(ncol = 2) %>%
+  plot() %>%
+  str()
+```
+
+Aquí `plot()` genera una gráfica, pero devuelve `NULL`.
+
+Por eso, cuando después aplicamos `str()`, se aplica sobre `NULL`.
+
+Ahora usamos `%T>%`:
+
+```{r}
+rnorm(100) %>%
+  matrix(ncol = 2) %T>%
+  plot() %>%
+  str()
+```
+
+En este caso, `plot()` se ejecuta, pero la tubería sigue pasando la matriz original.
+
+Por eso `str()` muestra la estructura de la matriz, no `NULL`.
+
+---
+
+## 2.2 El operador `%$%`
+
+El operador `%$%` permite usar directamente las variables de un data frame.
+
+Esto es útil cuando usamos funciones que esperan vectores, no data frames.
+
+Por ejemplo, con `mtcars` queremos calcular la correlación entre `disp` y `mpg`.
+
+Sin `%$%`, podríamos escribir:
+
+```{r}
+cor(mtcars$disp, mtcars$mpg)
+```
+
+Con `%$%`, podemos escribir:
+
+```{r}
+mtcars %$%
+  cor(disp, mpg)
+```
+
+La idea es que `%$%` “abre” el data frame para que podamos usar directamente sus columnas.
+
+---
+
+## 2.3 El operador `%<>%`
+
+El operador `%<>%` sirve para modificar un objeto y guardar el resultado en el mismo objeto.
+
+Por ejemplo, este código:
+
+```{r, eval=FALSE}
+mtcars <- mtcars %>%
+  transform(cyl = cyl * 2)
+```
+
+puede escribirse como:
+
+```{r, eval=FALSE}
+mtcars %<>%
+  transform(cyl = cyl * 2)
+```
+
+El operador `%<>%` combina tubería y asignación.
+
+Sin embargo, hay que usarlo con cuidado, porque modifica el objeto original.
+
+A veces es mejor escribir la asignación de forma explícita.
+
+De esa manera queda más claro que estamos reemplazando el objeto `mtcars`.
+
+---
+
+# 3 Ejercicios.
+
+En esta guía practicaremos las tres variantes vistas en clase:
+
+- `%T>%`
+- `%$%`
+- `%<>%`
+
+Carga los paquetes necesarios antes de iniciar:
+
+```{r, eval=FALSE}
+library(magrittr)
+library(dplyr)
+```
+
+---
+
+## Ejercicio 1.
+
+Crea el siguiente data frame:
+
+```{r, eval=FALSE}
+temperaturas <- data.frame(
+  dia = c("Lunes", "Martes", "Miércoles", "Jueves", "Viernes"),
+  minima = c(18, 19, 17, 20, 21),
+  maxima = c(28, 30, 27, 31, 32)
+)
+
+temperaturas %<>%
+  mutate(promedio=(minima+maxima)/2)
+temperaturas
+
+```
+
+Crea una nueva columna llamada `promedio`, definida como el promedio entre `minima` y `maxima`.
+
+El resultado debe quedar guardado nuevamente en el objeto `temperaturas`.
+
+
+
+---
+
+## Ejercicio 2.
+
+Crea el siguiente data frame:
+
+```{r, eval=FALSE}
+ventas <- data.frame(
+  producto = c("Pan", "Leche", "Huevos", "Café", "Arroz"),
+  precio = c(0.25, 1.10, 2.50, 4.75, 1.20),
+  cantidad = c(20, 12, 8, 5, 15)
+)
+
+ventas %<>%
+  mutate(ingreso_total=precio*cantidad) %>%
+  arrange(desc(ingreso_total))
+```
+
+Crea una columna llamada `ingreso_total`, definida como `precio * cantidad`.
+
+Luego ordena los productos de mayor a menor ingreso.
+
+El resultado debe quedar guardado nuevamente en el objeto `ventas`.
+
+
+---
+
+## Ejercicio 3.
+
+Usa la base de datos `mtcars`.
+
+Calcula la correlación entre `wt` y `mpg` escribiendo directamente los nombres de las columnas.
+
+```{r, eval=FALSE}
+mtcars %$%
+  cor(wt,mpg)
+```
+
+---
+
+## Ejercicio 4.
+
+Usa la base de datos `iris`.
+
+Calcula el promedio de `Petal.Length` escribiendo directamente el nombre de la columna.
+
+```{r, eval=FALSE}
+iris %$%
+  mean(Petal.Length)
+```
+
+
+
+---
+
+## Ejercicio 5.
+
+Genera 80 números aleatorios con distribución normal.
+
+Convierte esos números en una matriz con 2 columnas.
+
+Haz una gráfica de la matriz y luego muestra su estructura.
+
+La gráfica no debe interrumpir la secuencia de operaciones.
+
+
+
+```{r, eval=FALSE}
+rnorm(80) %>%
+  matrix(ncol = 2) %T>%
+  plot() %>%
+  str()
+```
+---
+
+## Ejercicio 6.
+
+Usa la base de datos `mtcars`.
+
+Haz lo siguiente:
+
+1. Conserva las columnas `mpg`, `hp`, `wt` y `cyl`.
+2. Conserva solamente los automóviles con `hp > 120`.
+3. Imprime las primeras filas del resultado intermedio.
+4. Crea una columna llamada `rendimiento`, definida como `mpg / hp`.
+5. Ordena el resultado de mayor a menor según `rendimiento`.
+
+
+
+```{r, eval=FALSE}
+mtcars %>%
+  select(mpg, hp, wt, cyl) %>%
+  filter(hp > 120) %T>%
+  head() %>%
+  mutate(rendimiento = mpg / hp) %>%
+  arrange(desc(rendimiento))
+```
+
+---
+
+## Ejercicio 7.
+
+Crea el siguiente data frame:
+
+```{r, eval=FALSE}
+estudiantes <- data.frame(
+  nombre = c("Ana", "Luis", "Marta", "Carlos", "Sofía", "Pedro"),
+  matematicas = c(8.5, 6.2, 9.1, 5.8, 7.4, 6.9),
+  programacion = c(9.0, 7.1, 8.8, 6.3, 8.2, 7.5)
+)
+
+estudiantes %<>%
+  mutate(promedio= (matematicas+programacion)/2) %T>%
+  head() %>%
+  filter(promedio>=7) %>%
+  arrange(desc(promedio))
+  
+```
+
+Haz lo siguiente:
+
+1. Crea una columna llamada `promedio`, definida como el promedio entre `matematicas` y `programacion`.
+2. Imprime una vista rápida del resultado.
+3. Conserva solamente estudiantes con promedio mayor o igual que `7`.
+4. Ordena los resultados de mayor a menor promedio.
+5. Guarda el resultado nuevamente en el objeto `estudiantes`.
+
+
+
+---
+
+## Ejercicio 8.
+
+Crea el siguiente data frame:
+
+```{r, eval=FALSE}
+ventas_categoria <- data.frame(
+  producto = c("Laptop", "Mouse", "Teclado", "Monitor", "Silla", "Escritorio", "Audífonos", "Webcam"),
+  categoria = c("Tecnología", "Tecnología", "Tecnología", "Tecnología", "Oficina", "Oficina", "Tecnología", "Tecnología"),
+  precio = c(800, 15, 25, 200, 120, 250, 45, 60),
+  cantidad = c(3, 20, 15, 5, 8, 4, 12, 10)
+)
+
+ventas_categoria %<>%
+  mutate(ingreso_total = precio * cantidad) %T>%
+  head() %>%
+  group_by(categoria) %>%
+  summarise(
+    ingreso_total = sum(ingreso_total),
+    cantidad_total = sum(cantidad)
+  ) %>%
+  arrange(desc(ingreso_total))
+
+ventas_categoria
+```
+
+Haz lo siguiente:
+
+1. Crea una columna llamada `ingreso_total`, definida como `precio * cantidad`.
+2. Imprime las primeras filas después de crear `ingreso_total`.
+3. Calcula el ingreso total por categoría.
+4. Calcula la cantidad total de productos vendidos por categoría.
+5. Ordena el resultado de mayor a menor ingreso total.
+6. Guarda el resultado nuevamente en el objeto `ventas_categoria`.
+
+
+
