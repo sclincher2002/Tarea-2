@@ -1,0 +1,127 @@
+---
+title: "Proyecto1"
+author: "Denis Javier Rivera Arbaiza"
+date: "2026-05-17"
+output: pdf_document
+---
+
+## Auditoría de ventas en una joyería usando diamonds
+
+Una empresa dedicada a la venta de joyas desea analizar su inventario de diamantes. El equipo comercial sospecha que algunos diamantes tienen precios inusualmente altos en relación con su peso, por lo que necesita construir un reporte que permita identificar productos costosos, calcular indicadores de precio y resumir la información por calidad de corte.
+
+## Descripción de las columnas
+
+La base de datos diamonds contiene las siguientes columnas:
+
+• **price:** precio del diamante, expresado en dólares estadounidenses.
+
+• **carat:** peso del diamante en quilates. Un mayor valor de carat generalmente indica un diamante más grande.
+
+• **cut:** calidad del corte del diamante. Esta variable es categórica y puede tomar valores como Fair, Good, Very Good, Premium e Ideal.
+
+• **color:** color del diamante. Se representa mediante letras, donde usualmente las letras más cercanas al inicio de la escala indican mejor calidad de color.
+
+• **clarity:** claridad del diamante. Esta variable describe el nivel de imperfecciones internas o externas del diamante.
+
+• **x:** longitud del diamante, medida en milímetros.
+
+• **y:** ancho del diamante, medido en milímetros.
+
+• **z:** profundidad del diamante, medida en milímetros.
+
+• **depth:** porcentaje de profundidad total del diamante. Se calcula a partir de sus dimensiones físicas.
+
+• **table:** ancho de la parte superior del diamante, expresado como porcentaje respecto al punto más ancho.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(magrittr)
+```
+
+## Tipos de corte que tienen mayor precio promedio
+
+```{r}
+media_precio_corte <- diamonds %>%
+  group_by (cut) %>%
+  summarise(media_precio_corte = mean(price)) %>%
+  arrange(desc(media_precio_corte))
+
+media_precio_corte
+```
+
+Como podemos observar el corte **Premium** y **Fair** tienen el mayor precio promedio por el tipo de corte.
+
+## Tipos de corte que presentan mayor precio por quilate
+
+```{r}
+media_precio_quilate <- diamonds %>%
+  group_by(cut) %>%
+  summarise(media_precio_quilate = mean(price/carat))%>%
+  arrange(desc(media_precio_quilate))
+media_precio_quilate
+```
+
+Los cortes con mayor precio promedio por quilate son: **premium** **very good**
+
+```{r}
+media_price <-  diamonds %>%
+  summarise(media = mean(price)) 
+media_price
+
+```
+
+Clasificamos a los diamantes por precio muy alto a aquellos que superen el precio de \$15,000 (tener en cuenta que la media del precio es de 3,932.8)
+
+A base a lo anterior no se pueden comparar diamantes solamente por el precio total ya que este puede estar influenciado por el tipo de corte, peso en quiltate u otra carectirista que pueda influenciar el precio total.
+
+## Clasificación de los diamantes según su precio relativo
+
+```{r}
+diamonds %<>%
+  select(carat,cut,table,price) %>%
+  mutate(precio_por_quilate = price/carat)
+diamonds
+```
+
+```{r}
+diamonds %<>%
+  select(carat,cut,table,price,precio_por_quilate) %>%
+  mutate(clasificacion_precio =
+      ifelse(price < 5000, "Precio bajo",
+      ifelse(price < 10000, "Precio medio",
+      ifelse(price < 15000, "Precio alto",
+             "Precio muy alto")))) %T>%
+  {print(head(.))}
+
+```
+
+**Cantidad de diamantes con precio muy alto**
+
+```{r}
+diamonds%>%
+  filter(clasificacion_precio == "Precio muy alto") %>%
+  nrow()
+
+```
+
+**Conclusion**
+
+```{r}
+resumen_corte <- diamonds %>%
+  group_by(cut) %>%
+  summarise(
+    cantidad = n(),
+    precio_promedio = mean(price),
+    precio_promedio_quilate = mean(precio_por_quilate),
+    precio_maximo = max(price),
+    precio_minimo = min(price)
+  ) %>%
+  arrange(desc(precio_promedio_quilate))
+
+resumen_corte
+```
+
+> En la tabla resumen se comparan diamantes agrupados por tipo de corte. Si el precio total dependiera  del peso solamente y de la calidad del corte, entonces el orden de los precios promedio debería coincidir con el orden de calidad de los cortes: Ideal, Premium, Very Good, Good y Fair.
+
+> Esto no ocurre en la tabla, ya que algunos cortes de menor calidad presentan precios promedio mayores que cortes considerados de mayor calidad. Esto quiere decir que existen otras características además del peso y el corte que influyen en el precio total del diamante, como el color y la claridad. En base a los datos obtenidos el que existan diamantes con el mismo peso y con precios muy diferentes es totalmente comprensible.
